@@ -31,10 +31,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	DownloadVideo(url)
+	downloadVideo(url)
 }
 
-func GetLink(query, url string) ([]byte, error) {
+func getLink(query, url string) ([]byte, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -69,14 +69,14 @@ func GetLink(query, url string) ([]byte, error) {
 	return body, nil
 }
 
-func DownloadVideo(videoUrl string) {
-	videoIdRegEx := regexp.MustCompile("[^videos/]*$")
-	videoId := string(videoIdRegEx.Find([]byte(videoUrl)))
+func downloadVideo(videoURL string) {
+	videoIDRegEx := regexp.MustCompile("[^videos/]*$")
+	videoID := string(videoIDRegEx.Find([]byte(videoURL)))
 
-	fmt.Println(string(videoId))
+	fmt.Println(string(videoID))
 
 	query := url.Values{}
-	responseByte, err := GetLink(query.Encode(), videoUrl)
+	responseByte, err := getLink(query.Encode(), videoURL)
 	if err != nil {
 		fmt.Println("Something went wrong!")
 	}
@@ -85,8 +85,6 @@ func DownloadVideo(videoUrl string) {
 	if strings.Contains(string(responseByte), "hd_src:null") {
 		regEx = regexp.MustCompile(`(?P<hdSrc>hd_src):(?P<hdLink>.*?),(?P<sdSrc>sd_src):"(?P<sdLink>.*?)"`)
 	}
-
-	// fmt.Println(string(responseByte))
 
 	names := regEx.SubexpNames()
 	result := regEx.FindStringSubmatch(string(responseByte))
@@ -102,24 +100,24 @@ func DownloadVideo(videoUrl string) {
 		linkMap[names[i]] = n
 	}
 
-	videoLink := VideoLink{
-		FileName: videoId,
+	videoLink := videoLink{
+		FileName: videoID,
 		HDLink:   linkMap["hdLink"],
 		SDLink:   linkMap["sdLink"],
 	}
 
-	ValidateURL(videoLink)
+	validateURL(videoLink)
 
 }
 
-func ValidateURL(videoLink VideoLink) {
+func validateURL(videoLink videoLink) {
 
 	if res == "hd" {
 		if videoLink.HDLink == "null" {
 			fmt.Println("Cannot find HD file, please try another resolution")
 			return
 		}
-		SaveFile(videoLink.HDLink, videoLink.FileName)
+		saveFile(videoLink.HDLink, videoLink.FileName)
 	}
 
 	if res == "sd" {
@@ -127,14 +125,14 @@ func ValidateURL(videoLink VideoLink) {
 			fmt.Println("Cannot find SD file, please try another resolution")
 			return
 		}
-		SaveFile(videoLink.SDLink, videoLink.FileName)
+		saveFile(videoLink.SDLink, videoLink.FileName)
 	}
 }
 
-func SaveFile(videoUrl string, fileName string) {
+func saveFile(videoURL string, fileName string) {
 	fmt.Println("Downloading...")
 
-	videoFile, err := http.Get(videoUrl)
+	videoFile, err := http.Get(videoURL)
 	if err != nil {
 		fmt.Println("Can't download the video.")
 		return
@@ -153,7 +151,7 @@ func SaveFile(videoUrl string, fileName string) {
 
 }
 
-type VideoLink struct {
+type videoLink struct {
 	FileName string
 	HDLink   string
 	SDLink   string
